@@ -77,7 +77,7 @@
     "youtube": "",
     "kick": "",
     "tiktok": "",
-    "avatar": "",
+    "avatar": "https://r2.fivemanage.com/image/miIGKkWFdz5h.png",
     "role": "Team FST"
   },
   {
@@ -86,7 +86,7 @@
     "youtube": "",
     "kick": "",
     "tiktok": "",
-    "avatar": "",
+    "avatar": "https://r2.fivemanage.com/image/L51WLzoPU0NA.png",
     "role": "Team FST"
   },
   {
@@ -95,16 +95,16 @@
     "youtube": "",
     "kick": "",
     "tiktok": "",
-    "avatar": "",
+    "avatar": "https://r2.fivemanage.com/image/gdNyoklP7L7E.png",
     "role": "Team FST"
   },
   {
     "name": "logantheginger",
     "twitch": "logantheginger",
     "youtube": "",
-    "kick": "https://kick.com/logantheginger",
+    "kick": "logantheginger",
     "tiktok": "",
-    "avatar": "",
+    "avatar": "https://r2.fivemanage.com/image/QDLjGoBnWaft.png",
     "role": "Team FST"
   }
 ]
