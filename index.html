@@ -639,7 +639,7 @@
                 if (ch.youtube) socialLinks.push(`<a class="platform-link platform-youtube" href="${ch.youtube}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on YouTube"><i class="fab fa-youtube" aria-hidden="true"></i> <span>YouTube</span></a>`);
                 if (ch.kick) socialLinks.push(`<a class="platform-link platform-kick" href="${ch.kick.startsWith('http') ? ch.kick : 'https://kick.com/' + ch.kick}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on Kick"><i class="fa-kick" aria-hidden="true"></i> <span>Kick</span></a>`);
                 if (ch.tiktok) socialLinks.push(`<a class="platform-link platform-tiktok" href="https://tiktok.com/@${ch.tiktok}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on TikTok"><i class="fab fa-tiktok" aria-hidden="true"></i> <span>TikTok</span></a>`);
-                if (ch.x) socialLinks.push(`<a class="platform-link platform-x" href="https://x.com/intent/follow?user_id=&screen_name=${ch.x}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on X"><i class="fab fa-x-twitter" aria-hidden="true"></i> <span>X</span></a>`);
+                if (ch.x) socialLinks.push(`<a class="platform-link platform-x" href="https://x.com/intent/follow?user_id=&screen_name=${ch.x}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on Twitter"><i class="fab fa-x-twitter" aria-hidden="true"></i> <span>X</span></a>`);
                 
                 card.innerHTML = `
                     <div class="frost-border" aria-hidden="true">
