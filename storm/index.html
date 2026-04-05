@@ -1,573 +1,244 @@
+
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap");
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-  .hud {
-    background: #08101f;
-    border-radius: 18px;
-    padding: 24px 20px 20px;
-    font-family: "Orbitron", sans-serif;
-    overflow: hidden;
-    position: relative;
-  }
-  .hud-canvas {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-  .hud-inner {
-    position: relative;
-    z-index: 1;
-  }
-  .hud-logo {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-  .hud-logo img {
-    width: 36px;
-    height: 36px;
-  }
-  .hud-logo-text {
-    font-size: 15px;
-    font-weight: 700;
-    color: #00d4ff;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-  }
-  .hud-logo-sub {
-    font-size: 9px;
-    letter-spacing: 2px;
-    color: #2a6a88;
-    margin-top: 2px;
-  }
-  .hud-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-  .hud-card {
-    background: #0d1e35;
-    border: 1px solid #0e3352;
-    border-radius: 12px;
-    padding: 12px 14px;
-  }
-  .hud-card-label {
-    font-size: 8px;
-    letter-spacing: 2.5px;
-    color: #2a6a88;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .hud-card-val {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 13px;
-    color: #00d4ff;
-    word-break: break-all;
-  }
-  .copy-btn {
-    background: #0d1e35;
-    border: 1px solid #0e3352;
-    border-radius: 8px;
-    padding: 4px 10px;
-    font-family: "Share Tech Mono", monospace;
-    font-size: 11px;
-    color: #00d4ff;
-    cursor: pointer;
-    margin-top: 6px;
-    display: inline-block;
-    transition: background 0.15s;
-  }
-  .copy-btn:hover {
-    background: #122840;
-  }
-  .copy-btn.copied {
-    color: #00ff88;
-    border-color: #0e4030;
-  }
-  .key-hint {
-    font-size: 9px;
-    color: #2a6a88;
-    letter-spacing: 1px;
-    margin-top: 4px;
-  }
-  .divider {
-    height: 1px;
-    background: #0e2440;
-    margin: 12px 0;
-  }
-  .restart-label {
-    font-size: 8px;
-    letter-spacing: 2.5px;
-    color: #2a6a88;
-    text-transform: uppercase;
-    text-align: center;
-    margin-bottom: 10px;
-  }
-  .flip-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .flip-unit {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-  }
-  .flip-unit-label {
-    font-size: 7px;
-    letter-spacing: 2px;
-    color: #1a5070;
-    text-transform: uppercase;
-  }
-  .flip-pair {
-    display: flex;
-    gap: 2px;
-  }
-  .fd {
-    width: 34px;
-    height: 50px;
-    background: #0a1c30;
-    border: 1px solid #0e3352;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Share Tech Mono", monospace;
-    font-size: 30px;
-    color: #00e5ff;
-    position: relative;
-    overflow: hidden;
-  }
-  .fd::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.5);
-  }
-  .fd.pop {
-    animation: fpop 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  @keyframes fpop {
-    0% {
-      transform: rotateX(0);
-    }
-    50% {
-      transform: rotateX(-85deg);
-    }
-    100% {
-      transform: rotateX(0);
-    }
-  }
-  .fsep {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 28px;
-    color: #00d4ff;
-    opacity: 0.5;
-    padding-bottom: 14px;
-    animation: bsep 1s step-end infinite;
-  }
-  @keyframes bsep {
-    0%,
-    100% {
-      opacity: 0.5;
-    }
-    50% {
-      opacity: 0.12;
-    }
-  }
-  .status-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .status-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #0d1e35;
-    border: 1px solid #0e3352;
-    border-radius: 8px;
-    padding: 8px 12px;
-    flex: 1;
-  }
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-  .dot-green {
-    background: #00ff88;
-    animation: dg 2s ease-in-out infinite;
-  }
-  .dot-blue {
-    background: #00d4ff;
-    animation: db 2s ease-in-out infinite;
-  }
-  @keyframes dg {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.4;
-    }
-  }
-  @keyframes db {
-    0%,
-    100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.4;
-    }
-  }
-  .status-info {
-  }
-  .status-info-label {
-    font-size: 7px;
-    letter-spacing: 2px;
-    color: #2a6a88;
-    text-transform: uppercase;
-  }
-  .status-info-val {
-    font-family: "Share Tech Mono", monospace;
-    font-size: 12px;
-    color: #00d4ff;
-    margin-top: 1px;
-  }
-  .sched-row {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin: 12px 0 0;
-  }
-  .sched-chip {
-    background: #0a1828;
-    border: 1px solid #0e3352;
-    border-radius: 20px;
-    padding: 4px 10px;
-    font-size: 8px;
-    color: #2a7090;
-    letter-spacing: 1px;
-    font-family: "Share Tech Mono", monospace;
-  }
-  .sched-chip.next {
-    border-color: #0a3d5c;
-    color: #00d4ff;
-  }
-  .sched-chip.past {
-    color: #183848;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+.hud{background:#08101f;min-height:100vh;width:100%;padding:40px 24px 32px;font-family:'Orbitron',sans-serif;overflow:hidden;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hud-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;}
+.hud-inner{position:relative;z-index:1;width:100%;max-width:640px;display:flex;flex-direction:column;align-items:center;gap:0;}
+.hud-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:28px;}
+.hud-logo img{width:52px;height:52px;}
+.hud-logo-text{font-size:22px;font-weight:900;color:#00d4ff;letter-spacing:4px;text-transform:uppercase;}
+.hud-logo-sub{font-size:10px;letter-spacing:3px;color:#2a6a88;margin-top:3px;}
+.connect-card{width:100%;background:#0d1e35;border:1px solid #0e3352;border-radius:14px;padding:18px 20px;margin-bottom:16px;}
+.hud-card-label{font-size:8px;letter-spacing:2.5px;color:#2a6a88;text-transform:uppercase;margin-bottom:8px;}
+.hud-card-val{font-family:'Share Tech Mono',monospace;font-size:15px;color:#00d4ff;word-break:break-all;}
+.copy-btn{background:#0a1828;border:1px solid #0e3352;border-radius:8px;padding:6px 14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:#00d4ff;cursor:pointer;margin-top:10px;display:inline-block;transition:background 0.15s;}
+.copy-btn:hover{background:#122840;}
+.copy-btn.copied{color:#00ff88;border-color:#0e4030;}
+.key-hint{font-size:9px;color:#2a6a88;letter-spacing:1px;margin-top:4px;}
+.divider{width:100%;height:1px;background:#0e2440;margin:18px 0;}
+.restart-label{font-size:9px;letter-spacing:3px;color:#2a6a88;text-transform:uppercase;text-align:center;margin-bottom:14px;}
+.flip-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:16px;}
+.flip-unit{display:flex;flex-direction:column;align-items:center;gap:6px;}
+.flip-unit-label{font-size:8px;letter-spacing:2px;color:#1a5070;text-transform:uppercase;}
+.flip-pair{display:flex;gap:4px;}
+.fd-wrap{width:52px;height:74px;perspective:200px;position:relative;}
+.fd-front,.fd-back{width:52px;height:74px;background:#0a1c30;border:1px solid #0e3352;border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:46px;color:#00e5ff;position:absolute;top:0;left:0;backface-visibility:hidden;}
+.fd-front::after,.fd-back::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,0.5);}
+.fd-back{transform:rotateX(180deg);}
+.fd-wrap.flipping .fd-front{animation:frontFlip 0.36s ease-in-out forwards;}
+.fd-wrap.flipping .fd-back{animation:backFlip 0.36s ease-in-out forwards;}
+@keyframes frontFlip{0%{transform:rotateX(0)}100%{transform:rotateX(-180deg)}}
+@keyframes backFlip{0%{transform:rotateX(180deg)}100%{transform:rotateX(0)}}
+.fsep{font-family:'Share Tech Mono',monospace;font-size:44px;color:#00d4ff;opacity:0.5;padding-bottom:18px;animation:bsep 1s step-end infinite;}
+@keyframes bsep{0%,100%{opacity:0.5}50%{opacity:0.12}}
+.sched-row{display:flex;justify-content:center;gap:10px;margin-top:4px;flex-wrap:wrap;}
+.sched-chip{background:#0a1828;border:1px solid #0e3352;border-radius:20px;padding:5px 14px;font-size:9px;color:#2a7090;letter-spacing:1px;font-family:'Share Tech Mono',monospace;}
+.sched-chip.next{border-color:#0a3d5c;color:#00d4ff;}
+.sched-chip.past{color:#183848;}
+.bottom-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:20px;flex-wrap:wrap;}
+.status-item{display:flex;align-items:center;gap:8px;background:#0d1e35;border:1px solid #0e3352;border-radius:10px;padding:10px 18px;}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.dot-blue{background:#00d4ff;animation:db 2s ease-in-out infinite;}
+@keyframes db{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-info-label{font-size:8px;letter-spacing:2px;color:#2a6a88;text-transform:uppercase;}
+.status-info-val{font-family:'Share Tech Mono',monospace;font-size:13px;color:#00d4ff;margin-top:2px;}
 </style>
 
 <div class="hud">
-  <canvas class="hud-canvas" id="hudBg"></canvas>
-  <div class="hud-inner">
-    <div class="hud-logo">
-      <img
-        src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif"
-        alt="FrostByte"
-      />
+<canvas class="hud-canvas" id="hudBg"></canvas>
+<div class="hud-inner">
+
+  <div class="hud-logo">
+    <img src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif" alt="FrostByte">
+    <div>
+      <div class="hud-logo-text">FrostByte RP</div>
+      <div class="hud-logo-sub">Server Status</div>
+    </div>
+    <img src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif" alt="FrostByte">
+  </div>
+
+  <div class="connect-card">
+    <div class="hud-card-label">F8 Connect Command</div>
+    <div class="hud-card-val">connect cfx.re/join/r7a93j</div>
+    <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap;">
+      <button class="copy-btn" id="copyBtn" onclick="doCopy()">Copy command</button>
+      <span class="key-hint">Press F8 in FiveM to open console</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+  <div class="restart-label">Next Storm Restart</div>
+
+  <div class="flip-row" id="flipRow"></div>
+  <div class="sched-row" id="schedRow"></div>
+
+  <div class="bottom-row">
+    <div class="status-item">
+      <div class="status-dot dot-blue"></div>
       <div>
-        <div class="hud-logo-text">FrostByte RP</div>
-        <div class="hud-logo-sub">Server Status</div>
-      </div>
-      <img
-        src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif"
-        alt="FrostByte"
-      />
-    </div>
-
-    <div class="hud-grid">
-      <div class="hud-card" style="grid-column: 1/-1">
-        <div class="hud-card-label">F8 Connect Command</div>
-        <div class="hud-card-val" id="connectCmd">
-          connect cfx.re/join/r7a93j
-        </div>
-        <div
-          style="display: flex; align-items: center; gap: 8px; margin-top: 6px"
-        >
-          <button class="copy-btn" id="copyBtn" onclick="doCopy()">
-            Copy command
-          </button>
-          <span class="key-hint">Press F8 in FiveM to open console</span>
-        </div>
-      </div>
-      <div class="hud-card">
-        <div class="hud-card-label">Server Status</div>
-        <div
-          style="display: flex; align-items: center; gap: 6px; margin-top: 2px"
-        >
-          <div class="status-dot dot-green"></div>
-          <div class="hud-card-val" style="color: #00ff88">Online</div>
-        </div>
-      </div>
-      <div class="hud-card">
-        <div class="hud-card-label">Uptime</div>
-        <div class="hud-card-val" id="uptimeVal">00:50:00</div>
+        <div class="status-info-label">Next restart</div>
+        <div class="status-info-val" id="nextESTLabel">—</div>
       </div>
     </div>
-
-    <div class="divider"></div>
-
-    <div class="restart-label">Next Storm Restart</div>
-    <div class="flip-row">
-      <div class="flip-unit">
-        <div class="flip-pair">
-          <div class="fd" id="h0">0</div>
-          <div class="fd" id="h1">6</div>
-        </div>
-        <div class="flip-unit-label">Hours</div>
-      </div>
-      <div class="fsep">:</div>
-      <div class="flip-unit">
-        <div class="flip-pair">
-          <div class="fd" id="m0">1</div>
-          <div class="fd" id="m1">0</div>
-        </div>
-        <div class="flip-unit-label">Minutes</div>
-      </div>
-      <div class="fsep">:</div>
-      <div class="flip-unit">
-        <div class="flip-pair">
-          <div class="fd" id="s0">0</div>
-          <div class="fd" id="s1">0</div>
-        </div>
-        <div class="flip-unit-label">Seconds</div>
-      </div>
-    </div>
-
-    <div class="sched-row" id="schedRow"></div>
-
-    <div class="divider"></div>
-
-    <div class="status-row">
-      <div class="status-item">
-        <div class="status-dot dot-green"></div>
-        <div class="status-info">
-          <div class="status-info-label">Server</div>
-          <div class="status-info-val">Live</div>
-        </div>
-      </div>
-      <div class="status-item">
-        <div class="status-dot dot-blue"></div>
-        <div class="status-info">
-          <div class="status-info-label">Next restart</div>
-          <div class="status-info-val" id="nextESTLabel">—</div>
-        </div>
-      </div>
-      <div class="status-item">
-        <div class="status-dot dot-blue"></div>
-        <div class="status-info">
-          <div class="status-info-label">Your local</div>
-          <div class="status-info-val" id="localLabel">—</div>
-        </div>
+    <div class="status-item">
+      <div class="status-dot dot-blue"></div>
+      <div>
+        <div class="status-info-label">Your local time</div>
+        <div class="status-info-val" id="localLabel">—</div>
       </div>
     </div>
   </div>
+
+</div>
 </div>
 
 <script>
-  (function () {
-    const RESTART_EST = [3, 11, 18];
-    const CONNECT_CMD = "connect cfx.re/join/r7a93j";
-    const UPTIME_START = Date.now() - 50 * 60 * 1000;
+(function(){
+  const RESTART_EST=[3,11,18];
+  const state={};
 
-    function getNowEST() {
-      return new Date(
-        new Date().toLocaleString("en-US", { timeZone: "America/New_York" }),
-      );
-    }
-
-    function getNextRestart() {
-      const now = getNowEST();
-      const frac =
-        now.getHours() + now.getMinutes() / 60 + now.getSeconds() / 3600;
-      let nextH = RESTART_EST.find((h) => h > frac + 0.001) ?? RESTART_EST[0];
-      const next = new Date(now);
-      next.setHours(nextH, 0, 0, 0);
-      if (next <= now) next.setDate(next.getDate() + 1);
-      return next;
-    }
-
-    function pad2(n) {
-      return n < 10 ? "0" + n : "" + n;
-    }
-
-    function setFlip(id, ch) {
-      const el = document.getElementById(id);
-      if (!el) return;
-      if (el.textContent !== ch) {
-        el.classList.remove("pop");
-        void el.offsetWidth;
-        el.classList.add("pop");
-        el.textContent = ch;
+  function buildFlipRow(){
+    const row=document.getElementById('flipRow');
+    row.innerHTML='';
+    const labels=['Hours','Minutes','Seconds'];
+    const ids=[['h0','h1'],['m0','m1'],['s0','s1']];
+    ids.forEach((pair,i)=>{
+      if(i>0){
+        const sep=document.createElement('div');
+        sep.className='fsep';sep.textContent=':';
+        row.appendChild(sep);
       }
+      const unit=document.createElement('div');unit.className='flip-unit';
+      const pairDiv=document.createElement('div');pairDiv.className='flip-pair';
+      pair.forEach(id=>{
+        const wrap=document.createElement('div');wrap.className='fd-wrap';wrap.id='w_'+id;
+        const front=document.createElement('div');front.className='fd-front';front.id='f_'+id;front.textContent='0';
+        const back=document.createElement('div');back.className='fd-back';back.id='b_'+id;back.textContent='0';
+        wrap.appendChild(front);wrap.appendChild(back);
+        pairDiv.appendChild(wrap);
+        state[id]='0';
+      });
+      unit.appendChild(pairDiv);
+      const lbl=document.createElement('div');lbl.className='flip-unit-label';lbl.textContent=labels[i];
+      unit.appendChild(lbl);
+      row.appendChild(unit);
+    });
+  }
+
+  function flipDigit(id,newChar){
+    if(state[id]===newChar) return;
+    const wrap=document.getElementById('w_'+id);
+    const front=document.getElementById('f_'+id);
+    const back=document.getElementById('b_'+id);
+    if(!wrap||!front||!back) return;
+    back.textContent=newChar;
+    wrap.classList.remove('flipping');
+    void wrap.offsetWidth;
+    wrap.classList.add('flipping');
+    wrap.addEventListener('animationend',function done(){
+      wrap.removeEventListener('animationend',done);
+      wrap.classList.remove('flipping');
+      front.textContent=newChar;back.textContent=newChar;
+      state[id]=newChar;
+    },{once:true});
+  }
+
+  function pad2(n){return n<10?'0'+n:''+n;}
+
+  function getNowEST(){
+    return new Date(new Date().toLocaleString('en-US',{timeZone:'America/New_York'}));
+  }
+
+  function getNextRestart(){
+    const now=getNowEST();
+    const frac=now.getHours()+now.getMinutes()/60+now.getSeconds()/3600;
+    let nextH=RESTART_EST.find(h=>h>frac+0.001)??RESTART_EST[0];
+    const next=new Date(now);
+    next.setHours(nextH,0,0,0);
+    if(next<=now) next.setDate(next.getDate()+1);
+    return next;
+  }
+
+  function updateCountdown(){
+    const now=new Date();
+    const next=getNextRestart();
+    let diff=Math.max(0,Math.floor((next-now)/1000));
+    const h=Math.floor(diff/3600);diff-=h*3600;
+    const m=Math.floor(diff/60);const s=diff-m*60;
+    const hs=pad2(h),ms=pad2(m),ss=pad2(s);
+    flipDigit('h0',hs[0]);flipDigit('h1',hs[1]);
+    flipDigit('m0',ms[0]);flipDigit('m1',ms[1]);
+    flipDigit('s0',ss[0]);flipDigit('s1',ss[1]);
+
+    const nextH=getNextRestart().getHours();
+    const labels={3:'3:00 AM',11:'11:00 AM',18:'6:00 PM'};
+    const el=document.getElementById('nextESTLabel');
+    if(el) el.textContent=(labels[nextH]??nextH+':00')+' EST';
+
+    const localEl=document.getElementById('localLabel');
+    if(localEl){
+      const ref=new Date();ref.setHours(0,0,0,0);
+      const estMid=new Date(ref.toLocaleString('en-US',{timeZone:'America/New_York'}));
+      const offsetMs=ref.getTime()-estMid.getTime();
+      const restartUTC=new Date(ref.getTime()+nextH*3600000+offsetMs);
+      if(restartUTC<=now) restartUTC.setDate(restartUTC.getDate()+1);
+      localEl.textContent=restartUTC.toLocaleTimeString([],{hour:'numeric',minute:'2-digit',hour12:true});
     }
+  }
 
-    function updateUptime() {
-      const s = Math.floor((Date.now() - UPTIME_START) / 1000);
-      const h = Math.floor(s / 3600),
-        m = Math.floor((s % 3600) / 60),
-        sec = s % 60;
-      const el = document.getElementById("uptimeVal");
-      if (el) el.textContent = pad2(h) + ":" + pad2(m) + ":" + pad2(sec);
+  function buildSched(){
+    const labels={3:'3 AM',11:'11 AM',18:'6 PM'};
+    const row=document.getElementById('schedRow');
+    if(!row) return;
+    const nowFrac=getNowEST().getHours()+getNowEST().getMinutes()/60;
+    const nextH=getNextRestart().getHours();
+    row.innerHTML=RESTART_EST.map(h=>{
+      const cls=h===nextH?'sched-chip next':(h<nowFrac?'sched-chip past':'sched-chip');
+      return `<div class="${cls}">${labels[h]} EST</div>`;
+    }).join('');
+  }
+
+  window.doCopy=function(){
+    navigator.clipboard.writeText('connect cfx.re/join/r7a93j').then(()=>{
+      const btn=document.getElementById('copyBtn');
+      if(btn){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='Copy command';btn.classList.remove('copied');},2000);}
+    }).catch(()=>{
+      const btn=document.getElementById('copyBtn');
+      if(btn){btn.textContent='Copy failed';setTimeout(()=>{btn.textContent='Copy command';},2000);}
+    });
+  };
+
+  function initBg(){
+    const canvas=document.getElementById('hudBg');
+    if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const wrap=canvas.parentElement;
+    let W=wrap.offsetWidth,H=wrap.offsetHeight;
+    canvas.width=W;canvas.height=H;
+    const pts=Array.from({length:80},()=>({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.25,vy:.15+Math.random()*.45,
+      r:.8+Math.random()*2,op:.06+Math.random()*.22
+    }));
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p=>{
+        p.x+=p.vx;p.y+=p.vy;
+        if(p.y>H){p.y=-4;p.x=Math.random()*W;}
+        ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle=`rgba(0,212,255,${p.op})`;ctx.fill();
+      });
+      requestAnimationFrame(draw);
     }
+    draw();
+    try{new ResizeObserver(()=>{W=wrap.offsetWidth;H=wrap.offsetHeight;canvas.width=W;canvas.height=H;}).observe(wrap);}catch(e){}
+  }
 
-    function updateCountdown() {
-      const now = new Date();
-      const next = getNextRestart();
-      const nowEST = getNowEST();
-      let diff = Math.max(0, Math.floor((next - now) / 1000));
-      const h = Math.floor(diff / 3600);
-      diff -= h * 3600;
-      const m = Math.floor(diff / 60);
-      const s = diff - m * 60;
-      const hs = pad2(h),
-        ms = pad2(m),
-        ss = pad2(s);
-      setFlip("h0", hs[0]);
-      setFlip("h1", hs[1]);
-      setFlip("m0", ms[0]);
-      setFlip("m1", ms[1]);
-      setFlip("s0", ss[0]);
-      setFlip("s1", ss[1]);
-
-      const nextH = getNextRestart().getHours();
-      const labels = { 3: "3:00 AM", 11: "11:00 AM", 18: "6:00 PM" };
-      const nextLabel = document.getElementById("nextESTLabel");
-      if (nextLabel)
-        nextLabel.textContent = (labels[nextH] ?? nextH + ":00") + " EST";
-
-      const localEl = document.getElementById("localLabel");
-      if (localEl) {
-        const ref = new Date();
-        ref.setHours(0, 0, 0, 0);
-        const estMid = new Date(
-          ref.toLocaleString("en-US", { timeZone: "America/New_York" }),
-        );
-        const offsetMs = ref.getTime() - estMid.getTime();
-        const restartUTC = new Date(ref.getTime() + nextH * 3600000 + offsetMs);
-        if (restartUTC <= now) restartUTC.setDate(restartUTC.getDate() + 1);
-        localEl.textContent = restartUTC.toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        });
-      }
-    }
-
-    function buildSched() {
-      const labels = { 3: "3 AM", 11: "11 AM", 18: "6 PM" };
-      const row = document.getElementById("schedRow");
-      if (!row) return;
-      const nowEST = getNowEST();
-      const nowFrac = nowEST.getHours() + nowEST.getMinutes() / 60;
-      const nextH = getNextRestart().getHours();
-      row.innerHTML = RESTART_EST.map((h) => {
-        const cls =
-          h === nextH
-            ? "sched-chip next"
-            : h < nowFrac
-              ? "sched-chip past"
-              : "sched-chip";
-        return `<div class="${cls}">${labels[h]} EST</div>`;
-      }).join("");
-    }
-
-    window.doCopy = function () {
-      navigator.clipboard
-        .writeText(CONNECT_CMD)
-        .then(() => {
-          const btn = document.getElementById("copyBtn");
-          if (btn) {
-            btn.textContent = "Copied!";
-            btn.classList.add("copied");
-            setTimeout(() => {
-              btn.textContent = "Copy command";
-              btn.classList.remove("copied");
-            }, 2000);
-          }
-        })
-        .catch(() => {
-          const btn = document.getElementById("copyBtn");
-          if (btn) {
-            btn.textContent = "Copy failed";
-            setTimeout(() => {
-              btn.textContent = "Copy command";
-            }, 2000);
-          }
-        });
-    };
-
-    function initBg() {
-      const canvas = document.getElementById("hudBg");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      const wrap = canvas.parentElement;
-      let W = wrap.offsetWidth,
-        H = wrap.offsetHeight;
-      canvas.width = W;
-      canvas.height = H;
-      const pts = Array.from({ length: 55 }, () => ({
-        x: Math.random() * W,
-        y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: 0.15 + Math.random() * 0.45,
-        r: 0.8 + Math.random() * 1.8,
-        op: 0.08 + Math.random() * 0.25,
-      }));
-      function draw() {
-        ctx.clearRect(0, 0, W, H);
-        pts.forEach((p) => {
-          p.x += p.vx;
-          p.y += p.vy;
-          if (p.y > H) {
-            p.y = -4;
-            p.x = Math.random() * W;
-          }
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(0,212,255,${p.op})`;
-          ctx.fill();
-        });
-        requestAnimationFrame(draw);
-      }
-      draw();
-      try {
-        new ResizeObserver(() => {
-          W = wrap.offsetWidth;
-          H = wrap.offsetHeight;
-          canvas.width = W;
-          canvas.height = H;
-        }).observe(wrap);
-      } catch (e) {}
-    }
-
-    buildSched();
-    updateCountdown();
-    updateUptime();
-    initBg();
-    setInterval(() => {
-      updateCountdown();
-      updateUptime();
-      buildSched();
-    }, 1000);
-  })();
+  buildFlipRow();
+  buildSched();
+  updateCountdown();
+  initBg();
+  setInterval(()=>{updateCountdown();buildSched();},1000);
+})();
 </script>
