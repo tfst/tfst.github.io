@@ -59,7 +59,6 @@
     "avatar": "https://r2.fivemanage.com/image/9yICKxyB1EJ7.png",
     "role": "Team FST"
   },
-
   {
     "name": "wizzybutt",
     "twitch": "wizzybutt",
@@ -80,7 +79,6 @@
     "avatar": "https://r2.fivemanage.com/image/L51WLzoPU0NA.png",
     "role": "Team FST"
   },
-
   {
     "name": "logantheginger",
     "twitch": "logantheginger",
@@ -89,6 +87,46 @@
     "tiktok": "LoganTheGinger",
     "x": "LoganTheGinger",
     "avatar": "https://r2.fivemanage.com/image/QDLjGoBnWaft.png",
+    "role": "Team FST"
+  },
+  {
+    "name": "braedan_xi",
+    "twitch": "braedan_xi",
+    "youtube": "",
+    "kick": "",
+    "tiktok": "",
+    "x": "",
+    "avatar": "",
+    "role": "Team FST"
+  },
+  {
+    "name": "itstennyy",
+    "twitch": "itstennyy",
+    "youtube": "",
+    "kick": "",
+    "tiktok": "",
+    "x": "",
+    "avatar": "",
+    "role": "Team FST"
+  },
+  {
+    "name": "187_mode",
+    "twitch": "187_mode",
+    "youtube": "",
+    "kick": "",
+    "tiktok": "",
+    "x": "",
+    "avatar": "",
+    "role": "Team FST"
+  },
+  {
+    "name": "g_theviking",
+    "twitch": "g_theviking",
+    "youtube": "",
+    "kick": "",
+    "tiktok": "",
+    "x": "",
+    "avatar": "",
     "role": "Team FST"
   }
 ]
