@@ -1,62 +1,86 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stream Raffle System - Twitch & Kick</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <!-- Kick uses Pusher for their WebSockets. We have to load it from their CDN. -->
-    <script src="https://js.pusher.com/8.3.0/pusher.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <meta name="description" content="FrostByte StreamTeam - Discover amazing content creators">
+    <title>FrostByte StreamTeam</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap" rel="stylesheet">
+        <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif">
+    <link rel="icon" type="image/png" sizes="32x32" href="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif">
+    <link rel="apple-touch-icon" href="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif">
+    
     <style>
-        :root {
-            --bg: #0a0e1a;
-            --surface: rgba(0, 40, 80, 0.35);
-            --text: #ffffff;
-            --primary: #00d4ff;
-            --twitch: #9146ff;
-            --kick: #53fc18;
-            --tiktok: #ff0050;
-            --success: #00ffff;
-            --danger: #ff4d4d;
-
-            /* notify palette — Team FST electric cyan/blue */
-            --cyan: #00d4ff;
-            --violet: #0095ff;
-            --hot: #ff4d4d;
-            --ok: #00ffff;
-            --muted: #7fb3e0;
-            --line: rgba(0, 212, 255, 0.45);
-            --panel: linear-gradient(
-                135deg,
-                rgba(0, 40, 80, 0.94) 0%,
-                rgba(0, 20, 50, 0.9) 55%,
-                rgba(5, 12, 30, 0.92) 100%
-            );
-            --accent: var(--cyan);
+        /* =============
+   Base Styles
+==============*/
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
+        
         body {
             font-family: 'Orbitron', sans-serif;
+            color: #fff;
             background: #0a0e1a;
-            color: var(--text);
-            display: flex;
-            justify-content: center;
-            padding: 2rem;
-            margin: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+            position: relative;
         }
-        .container {
-            background: linear-gradient(135deg, rgba(0, 40, 80, 0.6), rgba(0, 20, 50, 0.8));
-            padding: 2rem;
-            border-radius: 20px;
+        
+        /* Skip to main content link for keyboard users */
+        .skip-link {
+            position: absolute;
+            top: -40px;
+            left: 0;
+            background: #00d4ff;
+            color: #0a0e1a;
+            padding: 8px 16px;
+            text-decoration: none;
+            font-weight: bold;
+            z-index: 10000;
+            border-radius: 0 0 8px 0;
+        }
+        
+        .skip-link:focus {
+            top: 0;
+        }
+        
+        canvas#bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 650px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            border: 2px solid rgba(0, 149, 255, 0.3);
+            height: 100%;
+            z-index: 0;
         }
-        h1 {
-            margin-top: 0;
+        
+        /* ===============================
+   Page Layout / Cards / Buttons
+================================*/
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            padding: 40px 20px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header {
             text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
             font-weight: 700;
             background: linear-gradient(135deg, #00d4ff, #0095ff, #00ffff);
             -webkit-background-clip: text;
@@ -64,863 +88,611 @@
             background-clip: text;
             text-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
             animation: glow 3s ease-in-out infinite alternate;
+            margin-bottom: 12px;
         }
+        
         @keyframes glow {
-            0% { filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.6)); }
-            100% { filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.8)); }
+            0% {
+                filter: drop-shadow(0 0 15px rgba(0, 212, 255, 0.6));
+            }
+            100% {
+                filter: drop-shadow(0 0 30px rgba(0, 255, 255, 0.8));
+            }
         }
-        .controls {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+        
+        .header p {
+            color: #b0d9ff;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            margin-top: 8px;
         }
-        .input-group {
-            display: flex;
-            gap: 0.5rem;
+        
+        /* Search Section */
+        .search-container {
+            margin-bottom: 40px;
+            text-align: center;
         }
-        input {
-            flex: 1;
-            padding: 0.75rem;
-            border: 2px solid rgba(0, 149, 255, 0.4);
-            border-radius: 10px;
+        
+        .search-label {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 600px;
+            padding: 16px 24px;
+            border-radius: 30px;
+            border: 2px solid #0095ff;
             background: rgba(10, 30, 50, 0.85);
             color: white;
-            font-size: 1rem;
-            font-family: 'Orbitron', sans-serif;
             outline: none;
+            font-size: 16px;
+            font-family: 'Orbitron', sans-serif;
+            display: block;
+            margin: 0 auto;
             transition: all 0.3s ease;
         }
-        input::placeholder { color: #7fb3e0; }
-        input:focus {
+        
+        .search-input::placeholder {
+            color: #7fb3e0;
+        }
+        
+        .search-input:focus {
             border-color: #00d4ff;
-            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5), 0 0 40px rgba(0, 149, 255, 0.3);
             background: rgba(10, 40, 70, 0.9);
         }
-        button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: 10px;
-            color: #0a0e1a;
-            font-weight: bold;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            white-space: nowrap;
+        
+        /* Grid Layout */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
         }
-        button:hover { opacity: 0.85; transform: translateY(-1px); box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3); }
-        .btn-twitch { background: var(--twitch); color: white; }
-        .btn-kick { background: var(--kick); color: black; }
-        .btn-tiktok { background: var(--tiktok); color: white; }
-        .btn-manual { background: var(--primary); }
-        .btn-draw { background: linear-gradient(135deg, #00d4ff, #0095ff); width: 100%; font-size: 1.2rem; margin-top: 1rem; padding: 1rem; box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);}
-
-        .status-container {
-            background: rgba(10, 30, 50, 0.6);
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            border: 1px solid rgba(0, 149, 255, 0.3);
+        
+        @media (min-width: 768px) {
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
         }
-        .status { font-size: 0.9rem; margin: 0.25rem 0; color: #7fb3e0; }
-
-        .entrants-box {
-            background: rgba(10, 30, 50, 0.6);
-            border: 1px solid rgba(0, 149, 255, 0.3);
-            border-radius: 10px;
-            padding: 1rem;
-            min-height: 150px;
-            max-height: 250px;
-            overflow-y: auto;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            align-content: flex-start;
-        }
-        .entrant-tag {
-            background: rgba(0, 149, 255, 0.15);
-            padding: 0.25rem 0.5rem 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            border-left: 3px solid var(--primary);
-            border-top: 1px solid rgba(0, 212, 255, 0.2);
-            border-right: 1px solid rgba(0, 212, 255, 0.2);
-            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-        }
-        .tag-twitch { border-left-color: var(--twitch); }
-        .tag-kick { border-left-color: var(--kick); }
-        .tag-tiktok { border-left-color: var(--tiktok); }
-        .entrant-remove {
-            background: none;
-            border: none;
-            color: var(--danger);
-            font-size: 0.9rem;
-            font-weight: bold;
-            line-height: 1;
-            padding: 0.1rem 0.3rem;
-            border-radius: 50%;
-            cursor: pointer;
-        }
-        .entrant-remove:hover {
-            background: rgba(255, 77, 77, 0.2);
-            opacity: 1;
-        }
-
-        .winner-display {
-            display: none;
-            text-align: center;
-            margin-top: 2rem;
-            padding: 2rem;
-            background: rgba(0, 149, 255, 0.12);
-            border-radius: 16px;
-            border: 2px solid var(--success);
-            box-shadow: 0 0 30px rgba(0, 255, 255, 0.25);
-        }
-        .winner-name {
-            font-size: 2.5rem;
-            color: var(--success);
-            font-weight: 900;
-            margin: 1rem 0;
-            text-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-        }
-
-        /* ==== thommie-notify (Team FST electric-cyan reskin) ==== */
-        .template { display: none !important; }
-
-        .notif-stack {
-            position: fixed;
-            top: 2.4vh;
-            left: 2.2vw;
-            width: min(360px, 28vw);
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        .notification {
+        
+        /* Channel Cards */
+        .channel-card {
             position: relative;
-            display: none;
-            width: 100%;
-            padding: 12px 14px 14px;
-            border-radius: 16px;
-            border: 1px solid var(--line);
-            background: var(--panel);
-            color: var(--text);
-            font-family: 'Orbitron', sans-serif;
-            box-shadow:
-                0 0 0 1px rgba(0, 212, 255, 0.1),
-                0 0 22px rgba(0, 212, 255, 0.2),
-                0 10px 28px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(135deg, rgba(0, 40, 80, 0.6), rgba(0, 20, 50, 0.8));
+            border-radius: 20px;
+            padding: 25px;
             overflow: hidden;
-            animation: notifIn 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid rgba(0, 149, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
-
-        @keyframes notifIn {
-            from { opacity: 0; transform: translateX(-18px) scale(0.96); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-
-        .notification.leaving { animation: notifOut 0.3s ease-in forwards; }
-
-        @keyframes notifOut {
-            to { opacity: 0; transform: translateX(-14px) scale(0.96); }
-        }
-
-        .notification::before {
+        
+        .channel-card::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 8px;
-            bottom: 8px;
-            width: 3px;
-            border-radius: 0 3px 3px 0;
-            background: var(--accent);
-            box-shadow: 0 0 10px var(--accent);
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00d4ff, #0095ff, #00ffff, #0095ff);
+            border-radius: 20px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            animation: borderRotate 4s linear infinite;
         }
-
-        .notification .edge {
+        
+        .channel-card:focus-within {
+            outline: 3px solid #00d4ff;
+            outline-offset: 4px;
+        }
+        
+        /* Frost Effect Overlay */
+        .frost-border {
             position: absolute;
-            left: 14px;
-            right: 14px;
-            height: 1px;
-            background: linear-gradient(90deg, transparent 0%, rgba(0, 212, 255, 0.5) 20%, rgba(0, 149, 255, 0.5) 80%, transparent 100%);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             pointer-events: none;
+            overflow: hidden;
+            border-radius: 20px;
         }
-        .notification .edge-top { top: 0; }
-        .notification .edge-bottom { bottom: 0; opacity: 0.5; }
-
-        .bignotif-container { display: flex; align-items: flex-start; gap: 12px; background: transparent; width: 100%; height: auto; }
-        .bignotif-icon {
-            float: none; padding: 0; margin: 0; width: 36px; height: 36px; min-width: 36px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center; font-size: 15px; color: var(--accent);
-            background: rgba(0, 212, 255, 0.08); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
-            box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 25%, transparent); flex-shrink: 0;
+        
+        .frost-border svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
         }
-        .bignotif-icon svg {
-            width: 18px; height: 18px; display: block; color: var(--accent);
-            filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 55%, transparent));
+        
+        .frost-border svg rect {
+            fill: none;
+            stroke: url(#frostGradient);
+            stroke-width: 3;
+            opacity: 0.6;
+            stroke-dasharray: 400;
+            stroke-dashoffset: 400;
+            animation: drawBorder 2s ease-in-out forwards;
         }
-        .bignotif-message { flex: 1; min-width: 0; padding: 0; height: auto; }
-        .bignotif-title {
-            font-size: 10px !important; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
-            color: var(--accent); margin-bottom: 3px; text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 45%, transparent);
+        
+        @keyframes drawBorder {
+            to {
+                stroke-dashoffset: 0;
+            }
         }
-        .bignotif-text { font-weight: 500; font-size: 13px !important; line-height: 1.4; color: var(--text); }
-
-        .progress-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: rgba(0, 20, 40, 0.55); overflow: hidden; }
-        .progress-bar .progress {
-            height: 100%; width: 100%; transform-origin: left center;
-            background: linear-gradient(90deg, var(--cyan), var(--violet));
-            box-shadow: 0 0 8px rgba(0, 212, 255, 0.65);
-            animation: progressShrink linear forwards;
+        
+        /* Channel Header */
+        .channel-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-
-        .notification.success { --accent: var(--ok); }
-        .notification.error { --accent: var(--hot); }
-        .notification.primary,.notification.info { --accent: var(--cyan); }
-        .notification.twitch { --accent: var(--twitch); }
-        .notification.kick { --accent: var(--kick); }
-        .notification.tiktok { --accent: var(--tiktok); }
+        
+        .channel-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid #00d4ff;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+        
+        .channel-card:hover .channel-avatar {
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+        
+        .channel-info {
+            flex: 1;
+        }
+        
+        .channel-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+            word-break: break-word;
+        }
+        
+        .member-role {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(0, 149, 255, 0.3), rgba(0, 212, 255, 0.2));
+            color: #00d4ff;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+        }
+        
+        /* Platform Links */
+        .platform-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .platform-link {
+            flex: 1 1 calc(50% - 5px);
+            min-width: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 15px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .platform-link:focus {
+            outline: 2px solid #00ffff;
+            outline-offset: 2px;
+        }
+        
+        .platform-twitch {
+            background: rgba(145, 70, 255, 0.2);
+            color: #b197fc;
+            border-color: rgba(145, 70, 255, 0.4);
+        }
+        
+        .platform-twitch:hover,
+        .platform-twitch:focus {
+            background: rgba(145, 70, 255, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(145, 70, 255, 0.4);
+        }
+        
+        .platform-youtube {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            border-color: rgba(255, 0, 0, 0.4);
+        }
+        
+        .platform-youtube:hover,
+        .platform-youtube:focus {
+            background: rgba(255, 0, 0, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+        }
+        
+        .platform-kick {
+            background: rgba(83, 252, 72, 0.2);
+            color: #73fc63;
+            border-color: rgba(83, 252, 72, 0.4);
+        }
+        
+        .platform-kick:hover,
+        .platform-kick:focus {
+            background: rgba(83, 252, 72, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(83, 252, 72, 0.4);
+        }
+        
+        .platform-tiktok {
+            background: rgba(255, 0, 80, 0.2);
+            color: #ff4d8f;
+            border-color: rgba(255, 0, 80, 0.4);
+        }
+        
+        .platform-tiktok:hover,
+        .platform-tiktok:focus {
+            background: rgba(255, 0, 80, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 0, 80, 0.4);
+        }
+        
+        .platform-x {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .platform-x:hover,
+        .platform-x:focus {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 255, 255, 0.4);
+        }
+        
+        .platform-link i,
+        .platform-link .platform-icon {
+            font-size: 1.1rem;
+            filter: drop-shadow(0 0 6px currentColor);
+        }
+        
+        /* Custom Kick Icon */
+        .fa-kick {
+            display: inline-block;
+            width: 1em;
+            height: 1em;
+            background: url('https://r2.fivemanage.com/image/LMrhZOIca7Qk.png') no-repeat center center;
+            background-size: contain;
+            text-indent: -9999px;
+            overflow: hidden;
+        }
+        
+        /* No Results Message */
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7fb3e0;
+            font-size: 1.2rem;
+        }
+        
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #00d4ff;
+            font-size: 1.2rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 15px;
+            }
+            .channels-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .platform-link {
+                flex: 1 1 100%;
+            }
+        }
+        
+        /* High Contrast Mode Support */
+        @media (prefers-contrast: high) {
+            .channel-card {
+                border: 3px solid #00d4ff;
+            }
+            .platform-link {
+                border-width: 3px;
+            }
+        }
+        
+        /* Reduced Motion Support */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
+
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
-<div class="notif-stack"></div>
-<div class="notification template" aria-hidden="true"></div>
+    <canvas id="bgCanvas" aria-hidden="true"></canvas>
 
-<div class="container">
-    <h1>🎟️ Multi-Stream Raffle</h1>
+    <main id="main-content" class="container">
+        <header class="header">
+            <h1><img src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif" alt="FrostByte StreamTeam Logo" style="width: 60px; height: 60px; vertical-align: middle; margin-right: 10px;"> FrostByte StreamTeam <img src="https://r2.fivemanage.com/VKmSaC3mFYGI9XWT95cc6/FB_Logo_Float.gif" alt="FrostByte StreamTeam Logo" style="width: 60px; height: 60px; vertical-align: middle; margin-left: 10px;"></h1>
+            <p>Discover Amazing Content From The FST Stream Team</p>
+        </header>
 
-    <div style="margin-bottom: 1rem;">
-        <input type="text" id="raffleKeyword" placeholder="Raffle Keyword (e.g., !raffle)" value="!raffle" style="width: 100%; box-sizing: border-box; text-align: center; font-size: 1.2rem;">
-    </div>
+        <section class="search-container" role="search">
+            <label for="searchInput" class="search-label">Search streamers</label>
+            <input 
+                type="search" 
+                class="search-input" 
+                id="searchInput" 
+                placeholder="🔍 Search streamers..." 
+                aria-label="Search for streamers by name"
+                autocomplete="off"
+            >
+        </section>
 
-    <div class="controls">
-        <!-- Twitch Auto-Connect -->
-        <div class="input-group">
-            <input type="text" id="twitchChannel" placeholder="Twitch Username">
-            <button class="btn-twitch" onclick="connectTwitch()">Connect Twitch</button>
-        </div>
-        <!-- Kick Auto-Connect (Experimental) -->
-        <div class="input-group">
-            <input type="text" id="kickChannel" placeholder="Kick Username">
-            <button class="btn-kick" onclick="connectKick()">Connect Kick</button>
-        </div>
+        <section aria-label="Stream team members" aria-live="polite" aria-atomic="false">
+            <div class="channels-grid" id="channelsContainer" role="list">
+                <div class="loading">Loading streamers...</div>
+            </div>
+        </section>
+    </main>
 
-        <!-- TikTok Auto-Connect (via Euler Stream) -->
-        <div class="input-group">
-            <input type="text" id="tiktokChannel" placeholder="TikTok Username">
-            <button class="btn-tiktok" onclick="connectTikTok()">Connect TikTok</button>
-        </div>
+    <script>
+        // ================================
+        // Canvas Frost + Ice + Snow Effect
+        // ================================
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
 
-        <!-- Manual Entry (any platform, e.g. someone you saw in chat) -->
-        <div class="input-group">
-            <input type="text" id="manualName" placeholder="Manual Viewer Name">
-            <button class="btn-manual" onclick="addManualEntry()">Add Manually</button>
-        </div>
-    </div>
-
-    <div class="status-container">
-        <div class="status" id="statusTwitch">Twitch: Not connected.</div>
-        <div class="status" id="statusKick">Kick: Not connected.</div>
-        <div class="status" id="statusTiktok">TikTok: Not connected.</div>
-    </div>
-
-    <h3 style="margin-bottom: 0.5rem;">Entrants (<span id="entrantCount">0</span>)</h3>
-    <div class="entrants-box" id="entrantsBox"></div>
-
-    <button class="btn-draw" onclick="drawWinner()">🎉 DRAW WINNER</button>
-    <button style="width: 100%; margin-top: 0.5rem; background: #4a2f22; color: white;" onclick="clearRaffle()">Clear Raffle</button>
-
-    <div class="winner-display" id="winnerDisplay">
-        <h2>🏆 WINNER 🏆</h2>
-        <div class="winner-name" id="winnerName">username</div>
-    </div>
-</div>
-
-<script>
-    /* ==================================================================
-       thommie-notify — notification engine (adapted, no jQuery dependency
-       needed beyond what's already loaded; SVG icons inline, no FA)
-       ================================================================== */
-    const SVG = {
-        check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
-        warn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h16.9a2 2 0 001.7-3L12.7 3.9a2 2 0 00-3.4 0z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
-        info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
-        star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.7L21 9.6l-4.5 4.2L17.7 21 12 17.8 6.3 21l1.2-7.2L3 9.6l6.4-.9L12 3z"/></svg>',
-        twitch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3L3 7v13h5v3l3-3h4l5-5V3H4z"/><path d="M15 8v4M11 8v4"/></svg>',
-        kick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h5v5l5-5h6l-8 8 8 9h-6l-5-5v5H4z"/></svg>',
-        tiktok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3v10.5a3.5 3.5 0 11-3.5-3.5"/><path d="M16 3c0 2.5 2 4.5 4.5 4.5"/></svg>',
-    };
-
-    const TYPE_META = {
-        success: { title: 'Raffle',  svg: SVG.check },
-        error:   { title: 'Raffle',  svg: SVG.warn },
-        primary: { title: 'Raffle',  svg: SVG.info },
-        info:    { title: 'Raffle',  svg: SVG.info },
-        winner:  { title: 'Winner',  svg: SVG.star },
-        twitch:  { title: 'Twitch',  svg: SVG.twitch },
-        kick:    { title: 'Kick',    svg: SVG.kick },
-        tiktok:  { title: 'TikTok',  svg: SVG.tiktok },
-    };
-
-    function ensureStack() {
-        let stack = document.querySelector('.notif-stack');
-        if (!stack) {
-            stack = document.createElement('div');
-            stack.className = 'notif-stack';
-            document.body.appendChild(stack);
-        }
-        return stack;
-    }
-
-    function resolveMeta(type) {
-        const t = (type || 'primary').toLowerCase();
-        return TYPE_META[t] || { title: 'Raffle', svg: SVG.info };
-    }
-
-    function ShowNotif(data) {
-        const type = (data.type || 'primary').toLowerCase();
-        const length = data.length != null ? Number(data.length) : 3500;
-        const text = data.text != null ? String(data.text) : '';
-        const meta = resolveMeta(type);
-
-        const notification = document.createElement('div');
-        notification.className = 'notification ' + type;
-        notification.innerHTML =
-            '<div class="edge edge-top"></div>' +
-            '<div class="edge edge-bottom"></div>' +
-            '<div class="bignotif-container">' +
-                '<div class="bignotif-icon">' + meta.svg + '</div>' +
-                '<div class="bignotif-message">' +
-                    '<div class="bignotif-title">' + meta.title + '</div>' +
-                    '<div class="bignotif-text"></div>' +
-                '</div>' +
-            '</div>' +
-            '<div class="progress-bar"><div class="progress"></div></div>';
-
-        notification.querySelector('.bignotif-text').textContent = text;
-
-        const stack = ensureStack();
-        notification.style.display = 'block';
-        stack.appendChild(notification);
-
-        const progress = notification.querySelector('.progress');
-        progress.style.animationDuration = length + 'ms';
-
-        setTimeout(function () {
-            notification.classList.add('leaving');
-            setTimeout(function () {
-                notification.remove();
-            }, 320);
-        }, length);
-    }
-
-    // Kept for parity with the original resource, in case something posts
-    // a message the way SendNuiMessage would in-game.
-    window.addEventListener('message', function (event) {
-        const data = event.data || {};
-        if (data.action === 'show' || data.text != null) {
-            ShowNotif(data);
-        }
-    });
-
-    /* ==================================================================
-       Raffle logic — now firing notifications for connect/error/winner
-       events instead of (or alongside) the plain status text.
-       ================================================================== */
-    let entrants = new Map(); // Using Map to store name + platform
-
-    // --- PERSISTENCE (localStorage — more reliable than cookies for a
-    // page opened as a local file) ---
-    const STORAGE_KEY = 'teamFstRaffle';
-
-    function saveState() {
-        try {
-            const state = {
-                entrants: Array.from(entrants.entries()),
-                raffleKeyword: document.getElementById('raffleKeyword').value,
-                twitchChannel: document.getElementById('twitchChannel').value,
-                kickChannel: document.getElementById('kickChannel').value,
-                tiktokChannel: document.getElementById('tiktokChannel').value,
-                manualName: document.getElementById('manualName').value,
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-        } catch (e) {
-            console.warn('Could not save raffle state:', e);
-        }
-    }
-
-    function loadState() {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (!raw) return;
-            const state = JSON.parse(raw);
-
-            if (Array.isArray(state.entrants)) {
-                entrants = new Map(state.entrants);
-            }
-            if (state.raffleKeyword) document.getElementById('raffleKeyword').value = state.raffleKeyword;
-            if (state.twitchChannel) document.getElementById('twitchChannel').value = state.twitchChannel;
-            if (state.kickChannel) document.getElementById('kickChannel').value = state.kickChannel;
-            if (state.tiktokChannel) document.getElementById('tiktokChannel').value = state.tiktokChannel;
-            if (state.manualName) document.getElementById('manualName').value = state.manualName;
-        } catch (e) {
-            console.warn('Could not load raffle state:', e);
-        }
-    }
-    let twitchWs = null;
-    let kickPusher = null;
-
-    // --- SOUND EFFECT SETUP ---
-    const winSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3');
-    winSound.volume = 0.5;
-
-    function updateDisplay() {
-        const box = document.getElementById('entrantsBox');
-        document.getElementById('entrantCount').innerText = entrants.size;
-        box.innerHTML = '';
-        entrants.forEach((platform, name) => {
-            const tag = document.createElement('div');
-            tag.className = `entrant-tag tag-${platform}`;
-
-            const label = document.createElement('span');
-            label.innerText = name;
-            tag.appendChild(label);
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'entrant-remove';
-            removeBtn.innerText = '×';
-            removeBtn.title = `Remove ${name}`;
-            removeBtn.onclick = () => removeEntry(name);
-            tag.appendChild(removeBtn);
-
-            box.appendChild(tag);
+        let mouseX = width / 2,
+            mouseY = height / 2;
+        window.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
         });
-        saveState();
-    }
 
-    function addEntry(name, platform) {
-        if (entrants.has(name)) {
-            console.log('[Entrants] skipped duplicate:', { name, platform });
-            return;
-        }
-        entrants.set(name, platform);
-        console.log('[Entrants] added:', { name, platform, totalEntrants: entrants.size });
-        updateDisplay();
-    }
-
-    function removeEntry(name) {
-        const platform = entrants.get(name);
-        if (entrants.delete(name)) {
-            console.log('[Entrants] removed:', { name, platform, totalEntrants: entrants.size });
-            updateDisplay();
-            ShowNotif({ type: 'primary', text: `Removed ${name} from the raffle.`, length: 2500 });
-        } else {
-            console.warn('[Entrants] remove requested for name not in list:', name);
-        }
-    }
-
-    function addManualEntry() {
-        const input = document.getElementById('manualName');
-        const name = input.value.trim();
-        if (name) {
-            console.log('[Entrants] manual entry added:', name);
-            addEntry(name, 'manual');
-            input.value = '';
-            input.focus();
-        }
-    }
-
-    // --- TWITCH CONNECTION ---
-    function connectTwitch() {
-        const channel = document.getElementById('twitchChannel').value.trim().toLowerCase();
-        const keyword = document.getElementById('raffleKeyword').value.trim().toLowerCase();
-        const status = document.getElementById('statusTwitch');
-
-        if (!channel) return alert("Please enter a Twitch channel name");
-
-        console.log('[Twitch] connecting', { channel, keyword });
-
-        if (twitchWs) {
-            console.log('[Twitch] closing existing connection before reconnecting');
-            twitchWs.close();
-        }
-        status.innerText = `Connecting to Twitch #${channel}...`;
-
-        twitchWs = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-
-        twitchWs.onopen = () => {
-            console.log('[Twitch] onopen — socket established, sending CAP/PASS/NICK/JOIN');
-            twitchWs.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-            twitchWs.send('PASS SCHMOOPIIE');
-            twitchWs.send('NICK justinfan12345');
-            twitchWs.send(`JOIN #${channel}`);
-            status.innerText = `🟢 Twitch: Connected to #${channel}`;
-            status.style.color = 'var(--success)';
-            ShowNotif({ type: 'twitch', text: `Connected to Twitch #${channel}`, length: 3500 });
-        };
-
-        twitchWs.onmessage = (event) => {
-            const messages = event.data.split('\r\n');
-            messages.forEach(msg => {
-                if (!msg) return;
-                if (msg.startsWith('PING')) {
-                    console.log('[Twitch] PING received — sending PONG');
-                    twitchWs.send('PONG :tmi.twitch.tv');
-                } else {
-                    const match = msg.match(/:(\w+)!\w+@[\w\.]+\sPRIVMSG\s#\w+\s:(.*)/);
-                    if (match) {
-                        const username = match[1];
-                        const text = match[2].trim().toLowerCase();
-                        console.log('[Twitch] chat message:', { username, text });
-                        if (text === keyword) {
-                            console.log('[Twitch] keyword match — adding entrant:', username);
-                            addEntry(username, 'twitch');
-                        }
-                    } else {
-                        console.log('[Twitch] unhandled IRC line:', msg);
-                    }
-                }
-            });
-        };
-
-        twitchWs.onerror = (e) => {
-            console.error('[Twitch] onerror', e);
-            status.innerText = "🔴 Twitch: Error connecting.";
-            status.style.color = 'var(--danger)';
-            ShowNotif({ type: 'error', text: 'Twitch connection error.', length: 4000 });
-        };
-
-        twitchWs.onclose = (e) => {
-            console.log('[Twitch] onclose', { code: e.code, reason: e.reason, wasClean: e.wasClean });
-        };
-    }
-
-    // --- KICK CONNECTION (EXPERIMENTAL) ---
-    async function connectKick() {
-        const channel = document.getElementById('kickChannel').value.trim().toLowerCase();
-        const keyword = document.getElementById('raffleKeyword').value.trim().toLowerCase();
-        const status = document.getElementById('statusKick');
-
-        if (!channel) return alert("Please enter a Kick channel name");
-
-        console.log('[Kick] connecting', { channel, keyword });
-        status.innerText = `Attempting to bypass CORS and connect to Kick...`;
-        status.style.color = '#7fb3e0';
-
-        // Public CORS proxies get rate-limited/blocked by Cloudflare fairly
-        // often, so we try a short list in order rather than relying on one.
-        const kickApiUrl = `https://kick.com/api/v1/channels/${channel}`;
-        const proxies = [
-            (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
-            (url) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-            (url) => `https://thingproxy.freeboard.io/fetch/${url}`,
-        ];
-
-        try {
-            let data = null;
-            let lastError = null;
-
-            for (const buildUrl of proxies) {
-                const proxied = buildUrl(kickApiUrl);
-                try {
-                    console.log('[Kick] trying proxy:', proxied);
-                    const response = await fetch(proxied);
-                    if (!response.ok) throw new Error(`Proxy returned ${response.status}`);
-                    data = await response.json();
-                    console.log('[Kick] proxy succeeded:', proxied, data);
-                    break; // success, stop trying more proxies
-                } catch (err) {
-                    console.warn('[Kick] proxy failed:', proxied, err);
-                    lastError = err;
-                }
+        // Ice Crystal Particles
+        class IceCrystal {
+            constructor() {
+                this.reset();
             }
-
-            if (!data) throw lastError || new Error("All CORS proxies failed");
-
-            const chatroomId = data.chatroom.id;
-            console.log('[Kick] resolved chatroom ID:', chatroomId);
-
-            if (kickPusher) {
-                console.log('[Kick] disconnecting existing Pusher instance before reconnecting');
-                kickPusher.disconnect();
+            reset() {
+                this.x = Math.random() * width;
+                this.y = -Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = 0.5 + Math.random() * 1.5;
+                this.size = 1 + Math.random() * 3;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+                this.opacity = 0.3 + Math.random() * 0.7;
             }
-
-            kickPusher = new Pusher('32cbd69e4b950bf97679', {
-                cluster: 'us2',
-                forceTLS: true
-            });
-
-            kickPusher.connection.bind('state_change', (states) => {
-                console.log('[Kick] Pusher connection state change:', states);
-            });
-            kickPusher.connection.bind('error', (err) => {
-                console.error('[Kick] Pusher connection error:', err);
-            });
-
-            const pusherChannel = kickPusher.subscribe(`chatrooms.${chatroomId}.v2`);
-
-            pusherChannel.bind('pusher:subscription_succeeded', () => {
-                console.log('[Kick] subscribed to chatroom channel:', `chatrooms.${chatroomId}.v2`);
-            });
-            pusherChannel.bind('pusher:subscription_error', (err) => {
-                console.error('[Kick] subscription error:', err);
-            });
-
-            pusherChannel.bind('App\\Events\\ChatMessageEvent', function(data) {
-                const text = data.content.trim().toLowerCase();
-                console.log('[Kick] chat message:', { sender: data.sender && data.sender.username, text });
-                if (text === keyword) {
-                    console.log('[Kick] keyword match — adding entrant:', data.sender.username);
-                    addEntry(data.sender.username, 'kick');
-                }
-            });
-
-            status.innerText = `🟢 Kick: Connected to ${channel}!`;
-            status.style.color = 'var(--kick)';
-            ShowNotif({ type: 'kick', text: `Connected to Kick ${channel}`, length: 3500 });
-
-        } catch (error) {
-            console.error('[Kick] connection failed:', error);
-            status.innerText = `🔴 Kick: Connection Failed (${error.message}). Cloudflare blocked the request.`;
-            status.style.color = 'var(--danger)';
-            ShowNotif({ type: 'error', text: `Kick connection failed: ${error.message}`, length: 4500 });
-        }
-    }
-
-    // --- TIKTOK CONNECTION (via Euler Stream — hosted signing service) ---
-    // WARNING: this key is embedded directly in this file. Do not publish
-    // this file anywhere public (GitHub Pages, a public repo, etc.) or
-    // anyone who views source can use your Euler Stream quota with it.
-    const EULER_API_KEY = 'euler_YzBkN2U1ZDQwYzVkZTlkNDZkY2JjNmQzZjQ0MjJmMTFkZGE0Y2E0ZmQ1YjIwNWMwMzE4ZjMz';
-    let tiktokWs = null;
-    let tiktokRetryCount = 0;
-    let tiktokNotLiveRetryCount = 0;
-    let tiktokRetryTimer = null;
-    let tiktokManualDisconnect = false;
-
-    // Generic transient upstream/signing errors — short backoff.
-    const TIKTOK_RETRYABLE_CODES = new Set([1011, 4500, 4556, 4557]);
-    const TIKTOK_MAX_RETRIES = 3;
-
-    // 4404 (NOT_LIVE) is often a false positive right when a stream starts
-    // (TikTok's own backend can take a bit to mark the room live), so it
-    // gets its own slower, more patient retry schedule.
-    const TIKTOK_NOT_LIVE_CODE = 4404;
-    const TIKTOK_NOT_LIVE_MAX_RETRIES = 4;
-    const TIKTOK_NOT_LIVE_DELAYS = [5000, 10000, 20000, 30000];
-
-    // Accepts a plain handle, an @handle, or a full profile/live URL and
-    // normalizes it down to just the unique_id TikTok/Euler expects.
-    function parseTikTokUsername(raw) {
-        let value = raw.trim();
-        const urlMatch = value.match(/tiktok\.com\/@([^/?#]+)/i);
-        if (urlMatch) {
-            value = urlMatch[1];
-        }
-        return value.replace(/^@/, '').trim();
-    }
-
-    function connectTikTok(isRetry) {
-        const username = parseTikTokUsername(document.getElementById('tiktokChannel').value);
-        document.getElementById('tiktokChannel').value = username;
-        const keyword = document.getElementById('raffleKeyword').value.trim().toLowerCase();
-        const status = document.getElementById('statusTiktok');
-
-        if (!username) return alert("Please enter a TikTok username");
-
-        tiktokManualDisconnect = false;
-        if (!isRetry) {
-            tiktokRetryCount = 0;
-            tiktokNotLiveRetryCount = 0;
-        }
-        clearTimeout(tiktokRetryTimer);
-        if (tiktokWs) tiktokWs.close();
-        status.innerText = `Connecting to TikTok @${username}...`;
-        status.style.color = '#7fb3e0';
-
-        const wsUrl = `wss://ws.eulerstream.com?uniqueId=${encodeURIComponent(username)}&apiKey=${encodeURIComponent(EULER_API_KEY)}`;
-        console.log('[TikTok] connecting', { username, keyword, retryAttempt: tiktokRetryCount, url: wsUrl.replace(EULER_API_KEY, '***') });
-        tiktokWs = new WebSocket(wsUrl);
-
-        tiktokWs.onopen = (e) => {
-            console.log('[TikTok] onopen — connection established', e);
-            tiktokRetryCount = 0;
-            tiktokNotLiveRetryCount = 0;
-            status.innerText = `🟢 TikTok: Connected to @${username}`;
-            status.style.color = 'var(--tiktok)';
-            ShowNotif({ type: 'tiktok', text: `Connected to TikTok @${username}`, length: 3500 });
-        };
-
-        tiktokWs.onmessage = (event) => {
-            console.log('[TikTok] onmessage — raw event.data:', event.data, 'typeof:', typeof event.data);
-
-            // Euler Stream sends JSON frames with a `messages` array by
-            // default (event.data as string). If your account/connection
-            // is instead running in raw protobuf mode, event.data will be
-            // binary and this will just no-op silently — that needs the
-            // @eulerstream/euler-websocket-sdk decoder added in, so flag
-            // it if TikTok entries never show up despite "Connected".
-            if (typeof event.data !== 'string') {
-                console.warn('[TikTok] non-string frame received (likely binary protobuf) — not decoded. Length:', event.data && event.data.byteLength || event.data && event.data.size);
-                return;
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.rotation += this.rotationSpeed;
+                if (this.y > height + 20) this.reset();
             }
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
+                const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                grad.addColorStop(0, '#ffffff');
+                grad.addColorStop(0.5, '#00d4ff');
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
 
-            let data;
+        // Frost Mist
+        class FrostMist {
+            constructor() {
+                this.reset();
+            }
+            reset() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.vx = (Math.random() - 0.5) * 0.2;
+                this.vy = 0.2 + Math.random() * 0.5;
+                this.size = 20 + Math.random() * 40;
+                this.life = 200 + Math.random() * 100;
+            }
+            update() {
+                this.x += this.vx;
+                this.y -= this.vy;
+                this.life--;
+                if (this.life <= 0 || this.y < -50) this.reset();
+            }
+            draw(ctx) {
+                const grad = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                grad.addColorStop(0, 'rgba(0, 212, 255, 0.08)');
+                grad.addColorStop(0.5, 'rgba(0, 149, 255, 0.04)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Mouse Frost Glow
+        class MouseGlow {
+            draw(ctx) {
+                const grad = ctx.createRadialGradient(mouseX, mouseY, 0, mouseX, mouseY, 50);
+                grad.addColorStop(0, 'rgba(0, 255, 255, 0.6)');
+                grad.addColorStop(0.3, 'rgba(0, 212, 255, 0.3)');
+                grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        const crystals = [],
+            mists = [],
+            mouseGlow = new MouseGlow();
+        
+        for (let i = 0; i < 100; i++) crystals.push(new IceCrystal());
+        for (let i = 0; i < 50; i++) mists.push(new FrostMist());
+
+        function animateFrost() {
+            ctx.clearRect(0, 0, width, height);
+            
+            // Background gradient
+            const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 50, width / 2, height / 2, height);
+            bgGrad.addColorStop(0, 'rgba(0, 60, 100, 0.15)');
+            bgGrad.addColorStop(0.5, 'rgba(0, 30, 60, 0.1)');
+            bgGrad.addColorStop(1, 'rgba(10, 14, 26, 0.5)');
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, width, height);
+            
+            mists.forEach(m => {
+                m.update();
+                m.draw(ctx);
+            });
+            
+            crystals.forEach(c => {
+                c.update();
+                c.draw(ctx);
+            });
+            
+            mouseGlow.draw(ctx);
+            requestAnimationFrame(animateFrost);
+        }
+        animateFrost();
+
+        window.addEventListener('resize', () => {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        });
+
+        // ========
+        // Channels (LOAD FROM JSON)
+        // ========
+        let channelsConfig = [];
+
+        async function loadChannels() {
             try {
-                data = JSON.parse(event.data);
-            } catch (e) {
-                console.error('[TikTok] JSON.parse failed on message:', e, event.data);
-                return;
-            }
-            console.log('[TikTok] parsed message payload:', data);
-
-            if (!data || !Array.isArray(data.messages)) {
-                console.warn('[TikTok] message had no `messages` array — nothing to process', data);
-                return;
-            }
-
-            data.messages.forEach((msg) => {
-                const type = String(msg.type || msg.event || '').toLowerCase();
-                const rawText = msg.comment || msg.text || msg.content || '';
-                const text = String(rawText).trim().toLowerCase();
-                const user = msg.nickname || msg.uniqueId ||
-                    (msg.user && (msg.user.uniqueId || msg.user.nickname));
-
-                console.log('[TikTok] event:', { type, user, text, raw: msg });
-
-                if (type.includes('chat') && user && text === keyword) {
-                    console.log('[TikTok] keyword match — adding entrant:', user);
-                    addEntry(user, 'tiktok');
+                const response = await fetch('https://raw.githubusercontent.com/tfst/tfst.github.io/refs/heads/main/frost.json');
+                if (!response.ok) {
+                    throw new Error("Failed to load frost.json");
                 }
+                const data = await response.json();
+                channelsConfig = Array.isArray(data) ? data : [];
+                console.log('Loaded channels:', channelsConfig);
+                renderChannels(channelsConfig);
+            } catch (err) {
+                console.error("Error loading channels:", err);
+                const container = document.getElementById('channelsContainer');
+                container.innerHTML = '<div class="no-results" role="alert">Failed to load streamers. Please try again later.</div>';
+            }
+        }
+
+        function renderChannels(channels = channelsConfig) {
+            const container = document.getElementById('channelsContainer');
+            
+            if (channels.length === 0) {
+                container.innerHTML = '<div class="no-results" role="status">No streamers found matching your search.</div>';
+                return;
+            }
+            
+            container.innerHTML = '';
+            
+            channels.forEach(ch => {
+                const card = document.createElement('article');
+                card.className = 'channel-card';
+                card.setAttribute('role', 'listitem');
+                
+                const socialLinks = [];
+                if (ch.twitch) socialLinks.push(`<a class="platform-link platform-twitch" href="https://twitch.tv/${ch.twitch}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on Twitch"><i class="fab fa-twitch" aria-hidden="true"></i> <span><img alt="Twitch Status" src="https://img.shields.io/twitch/status/${ch.name}">
+</span></a>`);
+                if (ch.youtube) socialLinks.push(`<a class="platform-link platform-youtube" href="https://www.youtube.com/@${ch.youtube}?sub_confirmation=1" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on YouTube"><i class="fab fa-youtube" aria-hidden="true"></i> <span>YouTube</span></a>`);
+if (ch.kick) socialLinks.push(`<a class="platform-link platform-kick" href="${ch.kick.startsWith('http') ? ch.kick : 'https://kick.com/' + ch.kick}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on Kick"><i class="fa-kick" aria-hidden="true"></i> <span>Kick</span></a>`);                if (ch.tiktok) socialLinks.push(`<a class="platform-link platform-tiktok" href="https://tiktok.com/@${ch.tiktok}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on TikTok"><i class="fab fa-tiktok" aria-hidden="true"></i> <span>TikTok</span></a>`);
+                if (ch.x) socialLinks.push(`<a class="platform-link platform-x" href="https://x.com/intent/follow?user_id=&screen_name=${ch.x}" target="_blank" rel="noopener noreferrer" aria-label="${ch.name} on Twitter"><i class="fab fa-x-twitter" aria-hidden="true"></i> <span>Twitter</span></a>`);
+                
+                card.innerHTML = `
+                    <div class="frost-border" aria-hidden="true">
+                        <svg>
+                            <defs>
+                                <linearGradient id="frostGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#00d4ff"/>
+                                    <stop offset="50%" stop-color="#0095ff"/>
+                                    <stop offset="100%" stop-color="#00ffff"/>
+                                </linearGradient>
+                            </defs>
+                            <rect x="0" y="0" width="100%" height="100%" rx="20" ry="20"/>
+                        </svg>
+                    </div>
+                    <div class="channel-header">
+                        <img src="${ch.avatar}" alt="${ch.name}'s avatar" class="channel-avatar" loading="lazy">
+                        <div class="channel-info">
+                            <h3>${ch.name}</h3>
+                            <span class="member-role"><img src="https://r2.fivemanage.com/image/i5g5WWsEVCfJ.jpg" alt="FrostByte StreamTeam Logo" style="width: 60px; height: 60px; vertical-align: middle; margin-right: 10px;"> ${ch.role}</span>
+                        </div>
+                    </div>
+                    <nav class="platform-links" aria-label="Social media links for ${ch.name}">
+                        ${socialLinks.join('')}
+                    </nav>
+                `;
+                
+                container.appendChild(card);
             });
-        };
-
-        tiktokWs.onerror = (e) => {
-            console.error('[TikTok] onerror', e);
-            status.innerText = "🔴 TikTok: Error connecting.";
-            status.style.color = 'var(--danger)';
-            ShowNotif({ type: 'error', text: 'TikTok connection error.', length: 4000 });
-        };
-
-        tiktokWs.onclose = (e) => {
-            console.log('[TikTok] onclose', { code: e.code, reason: e.reason, wasClean: e.wasClean, manualDisconnect: tiktokManualDisconnect, retryCount: tiktokRetryCount, notLiveRetryCount: tiktokNotLiveRetryCount });
-
-            if (tiktokManualDisconnect) {
-                status.innerText = `TikTok: Disconnected (code ${e.code}).`;
-                status.style.color = '#7fb3e0';
-                return;
-            }
-
-            // NOT_LIVE gets its own patient retry schedule — this is
-            // frequently a false positive from propagation delay right as
-            // a stream starts.
-            if (e.code === TIKTOK_NOT_LIVE_CODE && tiktokNotLiveRetryCount < TIKTOK_NOT_LIVE_MAX_RETRIES) {
-                const delay = TIKTOK_NOT_LIVE_DELAYS[tiktokNotLiveRetryCount];
-                tiktokNotLiveRetryCount++;
-                console.log(`[TikTok] NOT_LIVE (4404) — retry ${tiktokNotLiveRetryCount}/${TIKTOK_NOT_LIVE_MAX_RETRIES} in ${delay}ms`);
-                status.innerText = `TikTok: Not detected as live yet — rechecking (${tiktokNotLiveRetryCount}/${TIKTOK_NOT_LIVE_MAX_RETRIES})...`;
-                status.style.color = '#7fb3e0';
-                tiktokRetryTimer = setTimeout(() => connectTikTok(true), delay);
-                return;
-            }
-
-            if (e.code === TIKTOK_NOT_LIVE_CODE) {
-                console.error('[TikTok] gave up on NOT_LIVE retries — likely a real mismatch (handle, followers-only, or region lock)');
-                status.innerText = `TikTok: Still shows not live after ${TIKTOK_NOT_LIVE_MAX_RETRIES} checks. Verify the handle matches the URL exactly, and that the stream isn't followers-only or region-locked.`;
-                status.style.color = 'var(--danger)';
-                ShowNotif({ type: 'error', text: `TikTok still reports not live after ${TIKTOK_NOT_LIVE_MAX_RETRIES} checks — check the handle, followers-only setting, or region lock.`, length: 6000 });
-                return;
-            }
-
-            const shouldRetry = TIKTOK_RETRYABLE_CODES.has(e.code) && tiktokRetryCount < TIKTOK_MAX_RETRIES;
-
-            if (shouldRetry) {
-                tiktokRetryCount++;
-                const delay = 2500 * tiktokRetryCount;
-                console.log(`[TikTok] retryable close code ${e.code} — retry ${tiktokRetryCount}/${TIKTOK_MAX_RETRIES} in ${delay}ms`);
-                status.innerText = `TikTok: Transient error (code ${e.code}) — retrying (${tiktokRetryCount}/${TIKTOK_MAX_RETRIES})...`;
-                status.style.color = '#7fb3e0';
-                tiktokRetryTimer = setTimeout(() => connectTikTok(true), delay);
-            } else {
-                console.log('[TikTok] not retrying — final disconnect', { code: e.code, reason: e.reason });
-                status.innerText = `TikTok: Disconnected (code ${e.code}).`;
-                status.style.color = '#7fb3e0';
-                if (tiktokRetryCount >= TIKTOK_MAX_RETRIES) {
-                    console.error(`[TikTok] gave up after ${TIKTOK_MAX_RETRIES} retries, last code ${e.code}`);
-                    ShowNotif({ type: 'error', text: `TikTok reconnect gave up after ${TIKTOK_MAX_RETRIES} tries (code ${e.code}).`, length: 5000 });
-                }
-            }
-        };
-    }
-
-    // --- RAFFLE LOGIC ---
-    function drawWinner() {
-        if (entrants.size === 0) {
-            console.warn('[Winner] draw attempted with zero entrants');
-            ShowNotif({ type: 'error', text: 'No entrants yet!', length: 3000 });
-            return;
         }
 
-        const entrantsArray = Array.from(entrants.keys());
-        const winnerIndex = Math.floor(Math.random() * entrantsArray.length);
-        const winner = entrantsArray[winnerIndex];
+        // Search functionality with debouncing for better performance
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', e => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                const filtered = channelsConfig.filter(c => 
+                    c.name.toLowerCase().includes(searchTerm) || 
+                    c.role.toLowerCase().includes(searchTerm)
+                );
+                renderChannels(filtered);
+            }, 300);
+        });
 
-        console.log('[Winner] draw started', { totalEntrants: entrantsArray.length, entrants: entrantsArray, winnerIndex, winner });
+        // Initial load
+        loadChannels();
+    </script>
 
-        const display = document.getElementById('winnerDisplay');
-        const nameEl = document.getElementById('winnerName');
-
-        display.style.display = 'block';
-
-        let shuffles = 0;
-        const interval = setInterval(() => {
-            nameEl.innerText = entrantsArray[Math.floor(Math.random() * entrantsArray.length)];
-            shuffles++;
-            if (shuffles > 20) {
-                clearInterval(interval);
-                nameEl.innerText = winner;
-
-                console.log('[Winner] draw finished:', { winner, platform: entrants.get(winner) });
-
-                winSound.currentTime = 0;
-                winSound.play().catch(e => console.log("[Winner] audio play failed:", e));
-
-                ShowNotif({ type: 'winner', text: `🏆 ${winner} wins the raffle!`, length: 6000 });
-            }
-        }, 50);
-    }
-
-    function clearRaffle() {
-        if (confirm("Are you sure you want to clear all entrants?")) {
-            console.log('[Entrants] clearing raffle', { previousCount: entrants.size, previousEntrants: Array.from(entrants.entries()) });
-            entrants.clear();
-            updateDisplay();
-            document.getElementById('winnerDisplay').style.display = 'none';
-            ShowNotif({ type: 'primary', text: 'Raffle cleared.', length: 2500 });
-        } else {
-            console.log('[Entrants] clear cancelled by user');
-        }
-    }
-
-    document.getElementById('manualName').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') addManualEntry();
-    });
-
-    // Remember typed names/channels and the entrant list between visits.
-    ['raffleKeyword', 'twitchChannel', 'kickChannel', 'tiktokChannel', 'manualName'].forEach((id) => {
-        document.getElementById(id).addEventListener('change', saveState);
-    });
-
-    loadState();
-    updateDisplay();
-</script>
 </body>
+
 </html>
