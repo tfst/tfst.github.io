@@ -49,16 +49,7 @@
     "avatar": "https://r2.fivemanage.com/image/ntadIlgyYGos.png",
     "role": "Team FST"
   },
-  {
-    "name": "wizzybutt",
-    "twitch": "wizzybutt",
-    "youtube": "",
-    "kick": "",
-    "tiktok": "",
-    "x": "",
-    "avatar": "https://r2.fivemanage.com/image/miIGKkWFdz5h.png",
-    "role": "Team FST"
-  },
+
 
   {
     "name": "itstennyy",
@@ -79,5 +70,25 @@
     "x": "",
     "avatar": "https://r2.fivemanage.com/image/I9frZXzGAHAe.png",
     "role": "Team FST"
-  }
+  },
+    {
+    "name": "JsonDotRom",
+    "twitch": "JsonDotRom",
+    "youtube": "",
+    "kick": "JsonRP",
+    "tiktok": "",
+    "x": "",
+    "avatar": "https://r2.fivemanage.com/image/lHc9k0dnJ1iA.jpg",
+    "role": "Team FST"
+  },
+    {
+    "name": "rolann",
+    "twitch": "https://www.twitch.tv/rolann",
+    "youtube": "",
+    "kick": "",
+    "tiktok": "",
+    "x": "",
+    "avatar": "https://r2.fivemanage.com/image/cQtFEE1a8iU3.jpg",
+    "role": "Team FST"
+  },
 ]
